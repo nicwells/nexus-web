@@ -20,8 +20,8 @@ const getUserManager = (state: RootState): UserManager | undefined => {
   );
 
   const realm: Realm = preferredRealm
-    ? validRealms.find(r => r._label === preferredRealm) || validRealms[0]
-    : validRealms[0];
+    ? validRealms.find(r => r._label === preferredRealm) || validRealms[1]
+    : validRealms[1];
 
   if (!realm || !clientId || !redirectHostName) {
     return undefined;
@@ -29,7 +29,7 @@ const getUserManager = (state: RootState): UserManager | undefined => {
 
   const cacheKey = `${realm._label}||${realm._issuer}||${clientId}||${redirectHostName}`;
 
-  userManagerCache.has(cacheKey) ||
+  if (!userManagerCache.has(cacheKey)) {
     userManagerCache.set(
       cacheKey,
       new UserManager({
@@ -45,6 +45,7 @@ const getUserManager = (state: RootState): UserManager | undefined => {
         ...realm,
       })
     );
+  }
 
   return userManagerCache.get(cacheKey);
 };

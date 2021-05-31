@@ -16,6 +16,7 @@ import {
   sessionTerminated,
   userExpiring,
   userSignedOut,
+  userFound,
 } from 'redux-oidc';
 import * as Sentry from '@sentry/browser';
 
@@ -141,10 +142,10 @@ const setupUserSession = async (userManager: UserManager, store: Store) => {
   });
 
   //  Raised when the user's sign-in status at the OP has changed.
-  userManager.events.addUserSignedOut(() => {
-    store.dispatch(userSignedOut());
-    localStorage.removeItem('nexus__token');
-  });
+  // userManager.events.addUserSignedOut(() => {
+  //   store.dispatch(userSignedOut());
+  //   localStorage.removeItem('nexus__token');
+  // });
 
   // Raised when a user session has been terminated.
   userManager.events.addUserUnloaded(() => {
@@ -158,7 +159,12 @@ const setupUserSession = async (userManager: UserManager, store: Store) => {
     user = await userManager.getUser();
     if (user) {
       // we've loaded a user, refresh it
-      user = await userManager.signinSilent();
+      if (!user.expired) {
+        store.dispatch(userFound(user));
+      } else {
+        store.dispatch(userExpired());
+      }
+      // user = await userManager.signinSilent();
     }
     // nope, are we receiving a new token?
     else {
@@ -210,7 +216,7 @@ if (module.hot) {
 // to prevent nasty problems like White-screen-of-deathing
 async function main() {
   // remove old token if any
-  localStorage.removeItem('nexus__token');
+  // localStorage.removeItem('nexus__token');
   // configure user manager
   await store.dispatch<any>(fetchRealms());
   const userManager = getUserManager(store.getState());
