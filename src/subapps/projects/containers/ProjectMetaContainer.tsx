@@ -122,6 +122,7 @@ const ProjectMetaContaier: React.FC<{
                       message: 'Project information is updated succesfully',
                     });
                     setBusy(false);
+                    setShowForm(false);
                   })
                   .catch(error => {
                     notification.error({

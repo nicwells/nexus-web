@@ -32,7 +32,7 @@ const WorkflowStepContainer: React.FC<{
   const [refreshSteps, setRefreshSteps] = React.useState<boolean>(false);
 
   const waitAntReloadSteps = () =>
-    setTimeout(() => setRefreshSteps(!refreshSteps), 3500);
+    setTimeout(() => setRefreshSteps(!refreshSteps), 10000);
 
   React.useEffect(() => {
     checkForContext();

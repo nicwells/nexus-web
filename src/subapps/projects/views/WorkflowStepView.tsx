@@ -63,6 +63,7 @@ const WorkflowStepView: React.FC = () => {
   const stepId = match?.params.stepId || '';
 
   React.useEffect(() => {
+    console.log('refresh steps, now.');
     nexus.Resource.get(orgLabel, projectLabel, stepId)
       .then(response => {
         setStep(response as StepResource);
@@ -79,12 +80,15 @@ const WorkflowStepView: React.FC = () => {
           description: parseNexusError(error),
         })
       );
-
     fetchChildren(stepId);
   }, [refreshSteps, stepId]);
 
   React.useEffect(() => {
-    fetchTables();
+    console.log(`wait for 10s`);
+    const x = new Promise(resolve => setTimeout(resolve, 10000)).then(x => {
+      console.log('10s elapsed, now fetch tables...');
+      fetchTables();
+    });
   }, [refreshTables, stepId]);
 
   const fetchTables = async () => {
@@ -193,22 +197,22 @@ const WorkflowStepView: React.FC = () => {
   };
 
   // TODO: find better sollution for this in future, for example, optimistic update
-  const waitAndReloadSteps = () => {
+  const reloadSteps = () => {
+    console.log('reload steps in 10s');
     const reloadTimer = setTimeout(() => {
+      console.log('reloading steps...');
       setRefreshSteps(!refreshSteps);
       clearTimeout(reloadTimer);
-    }, 3500);
+    }, 10000);
   };
 
-  const waitAndReloadTables = () => {
+  const reloadTables = () => {
+    console.log('reload tables in 10s');
     const reloadTimer = setTimeout(() => {
+      console.log('reloading tables...');
       setRefreshTables(!refreshTables);
       clearTimeout(reloadTimer);
-    }, 3500);
-  };
-
-  const reload = () => {
-    setRefreshSteps(!refreshSteps);
+    }, 10000);
   };
 
   const linkCodeToActivity = (codeResourceId: string) => {
@@ -263,7 +267,7 @@ const WorkflowStepView: React.FC = () => {
         notification.success({
           message: `New step ${name} created successfully`,
         });
-        waitAndReloadSteps();
+        reloadSteps();
       })
       .catch(error => {
         setShowStepForm(false);
@@ -275,7 +279,7 @@ const WorkflowStepView: React.FC = () => {
   };
 
   const addNewTable = () => {
-    waitAndReloadTables();
+    reloadTables();
     setShowNewTableForm(false);
   };
 
@@ -289,7 +293,7 @@ const WorkflowStepView: React.FC = () => {
       step
         ? () => {
             makeInputTable(step['@id'], nexus, orgLabel, projectLabel);
-            setRefreshTables(true);
+            setRefreshTables(!refreshTables);
           }
         : () => {};
   }, [step]);
@@ -299,7 +303,7 @@ const WorkflowStepView: React.FC = () => {
       step
         ? () => {
             makeActivityTable(step['@id'], nexus, orgLabel, projectLabel);
-            setRefreshTables(true);
+            setRefreshTables(!refreshTables);
           }
         : () => {};
   }, [step]);
@@ -321,7 +325,7 @@ const WorkflowStepView: React.FC = () => {
             step={step}
             projectLabel={projectLabel}
             orgLabel={orgLabel}
-            onUpdate={reload}
+            onUpdate={reloadSteps}
           />
         )}
       </div>
@@ -334,7 +338,7 @@ const WorkflowStepView: React.FC = () => {
               orgLabel={orgLabel}
               projectLabel={projectLabel}
               step={substep}
-              onUpdate={waitAndReloadSteps}
+              onUpdate={reloadSteps}
               parentLabel={step?.name}
             />
           ))}
@@ -344,6 +348,7 @@ const WorkflowStepView: React.FC = () => {
               orgLabel={orgLabel}
               projectLabel={projectLabel}
               tables={tables}
+              reloadTables={reloadTables}
             />
 
             <Modal

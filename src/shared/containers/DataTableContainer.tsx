@@ -59,6 +59,7 @@ type DataTableProps = {
   orgLabel: string;
   projectLabel: string;
   tableResourceId: string;
+  reloadTables: () => void;
 };
 
 const { Title } = Typography;
@@ -67,6 +68,7 @@ const DataTableContainer: React.FC<DataTableProps> = ({
   orgLabel,
   projectLabel,
   tableResourceId,
+  reloadTables,
 }) => {
   const [showEditForm, setShowEditForm] = React.useState<boolean>(false);
   const [searchboxValue, setSearchboxValue] = React.useState<string>('');
@@ -118,6 +120,7 @@ const DataTableContainer: React.FC<DataTableProps> = ({
       encodeURIComponent(tableResourceId),
       latest._rev
     );
+
     return deprecated;
   };
   const deprecateTableResource = useMutation(deprecateTable, {
@@ -125,6 +128,7 @@ const DataTableContainer: React.FC<DataTableProps> = ({
       Modal.destroyAll();
     },
     onSuccess: data => {
+      reloadTables();
       notification.success({
         message: 'Table deprecated',
       });
